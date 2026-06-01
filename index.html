@@ -1,0 +1,971 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>財務總覽 · 周于堯</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=SF+Pro+Display:wght@300;400;500;600;700&family=Noto+Sans+TC:wght@300;400;500;700&display=swap" rel="stylesheet">
+<style>
+/* ── Apple Design System ── */
+:root {
+  --bg: #000000;
+  --bg-1: #0a0a0a;
+  --bg-2: #111111;
+  --bg-3: #1c1c1e;
+  --bg-4: #2c2c2e;
+  --bg-5: #3a3a3c;
+  --text-primary: rgba(255,255,255,0.92);
+  --text-secondary: rgba(255,255,255,0.55);
+  --text-tertiary: rgba(255,255,255,0.30);
+  --separator: rgba(255,255,255,0.08);
+  --blue: #0a84ff;
+  --green: #30d158;
+  --red: #ff453a;
+  --orange: #ff9f0a;
+  --yellow: #ffd60a;
+  --teal: #5ac8fa;
+  --purple: #bf5af2;
+  --pink: #ff375f;
+  --glass: rgba(28,28,30,0.72);
+  --glass-border: rgba(255,255,255,0.10);
+  --radius-sm: 10px;
+  --radius-md: 14px;
+  --radius-lg: 18px;
+  --radius-xl: 24px;
+  --radius-full: 100px;
+  --blur: blur(40px);
+  --blur-sm: blur(20px);
+  --font-sys: -apple-system, 'SF Pro Display', 'Noto Sans TC', 'PingFang TC', sans-serif;
+  --shadow-sm: 0 2px 8px rgba(0,0,0,.35);
+  --shadow-md: 0 8px 32px rgba(0,0,0,.5);
+  --shadow-lg: 0 20px 60px rgba(0,0,0,.6);
+}
+
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+html { scroll-behavior: smooth; color-scheme: dark; }
+body {
+  font-family: var(--font-sys);
+  background: var(--bg);
+  color: var(--text-primary);
+  line-height: 1.5;
+  -webkit-font-smoothing: antialiased;
+  overflow-x: hidden;
+}
+
+/* ── SCROLLBAR ── */
+::-webkit-scrollbar { width: 0; }
+
+/* ── BACKGROUND ORBS ── */
+.bg-orbs {
+  position: fixed; inset: 0; pointer-events: none; z-index: 0; overflow: hidden;
+}
+.orb {
+  position: absolute; border-radius: 50%;
+  filter: blur(120px); opacity: .15;
+}
+.orb-1 { width: 600px; height: 600px; background: var(--blue); top: -200px; left: -100px; animation: drift1 20s ease-in-out infinite alternate; }
+.orb-2 { width: 500px; height: 500px; background: var(--purple); bottom: -100px; right: -100px; animation: drift2 25s ease-in-out infinite alternate; }
+.orb-3 { width: 400px; height: 400px; background: var(--teal); top: 40%; left: 30%; animation: drift3 18s ease-in-out infinite alternate; }
+@keyframes drift1 { to { transform: translate(80px, 60px); } }
+@keyframes drift2 { to { transform: translate(-60px, -80px); } }
+@keyframes drift3 { to { transform: translate(-40px, 50px); } }
+
+/* ── NAV BAR ── */
+.navbar {
+  position: fixed; top: 0; left: 0; right: 0; z-index: 100;
+  height: 52px;
+  background: rgba(0,0,0,.72);
+  backdrop-filter: var(--blur);
+  -webkit-backdrop-filter: var(--blur);
+  border-bottom: .5px solid var(--separator);
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 0 2rem;
+}
+.nav-brand { font-size: 17px; font-weight: 600; letter-spacing: -.02em; color: var(--text-primary); }
+.nav-links { display: flex; gap: 2rem; }
+.nav-links a {
+  font-size: 13px; font-weight: 400; color: var(--text-secondary);
+  text-decoration: none; letter-spacing: .01em;
+  transition: color .2s;
+}
+.nav-links a:hover { color: var(--blue); }
+.nav-right { display: flex; align-items: center; gap: .75rem; }
+.refresh-btn {
+  height: 30px; padding: 0 14px;
+  background: var(--blue); color: #fff;
+  border: none; border-radius: var(--radius-full);
+  font-family: var(--font-sys); font-size: 13px; font-weight: 500;
+  cursor: pointer; transition: all .2s; display: flex; align-items: center; gap: 5px;
+  letter-spacing: -.01em;
+}
+.refresh-btn:hover { background: #1a8fff; transform: scale(1.03); }
+.refresh-btn:active { transform: scale(.97); }
+.refresh-btn:disabled { background: var(--bg-4); color: var(--text-tertiary); transform: none; cursor: not-allowed; }
+.nav-time { font-size: 12px; color: var(--text-tertiary); letter-spacing: .04em; }
+
+/* ── TICKER ── */
+.ticker-bar {
+  position: fixed; top: 52px; left: 0; right: 0; z-index: 99;
+  height: 34px; overflow: hidden;
+  background: rgba(10,10,10,.8);
+  backdrop-filter: var(--blur-sm);
+  -webkit-backdrop-filter: var(--blur-sm);
+  border-bottom: .5px solid var(--separator);
+  display: flex; align-items: center;
+}
+.ticker-track {
+  display: flex; gap: 2.5rem;
+  animation: tickerScroll 28s linear infinite;
+  white-space: nowrap; padding-left: 100%;
+}
+.ticker-track:hover { animation-play-state: paused; }
+.ticker-item { display: flex; align-items: center; gap: .4rem; font-size: 12px; letter-spacing: .01em; }
+.t-code { color: var(--text-secondary); font-weight: 500; }
+.t-price { color: var(--text-primary); font-variant-numeric: tabular-nums; }
+.t-chg { font-size: 11px; }
+.t-chg.up { color: var(--green); }
+.t-chg.dn { color: var(--red); }
+@keyframes tickerScroll { from { transform: translateX(0); } to { transform: translateX(-50%); } }
+
+/* ── MAIN ── */
+main { position: relative; z-index: 1; padding: 120px 0 6rem; }
+.container { max-width: 1100px; margin: 0 auto; padding: 0 2rem; }
+
+/* ── HERO ── */
+.hero { margin-bottom: 4rem; }
+.hero-eyebrow {
+  font-size: 12px; font-weight: 600; letter-spacing: .12em;
+  text-transform: uppercase; color: var(--blue);
+  margin-bottom: .75rem;
+  display: flex; align-items: center; gap: .5rem;
+}
+.live-dot { width: 7px; height: 7px; border-radius: 50%; background: var(--green); animation: livePulse 2s infinite; }
+@keyframes livePulse { 0%,100%{opacity:1;transform:scale(1);} 50%{opacity:.4;transform:scale(.8);} }
+.hero-title {
+  font-size: clamp(40px, 6vw, 72px);
+  font-weight: 700; letter-spacing: -.04em; line-height: 1.05;
+  background: linear-gradient(135deg, #fff 0%, rgba(255,255,255,.6) 100%);
+  -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+  background-clip: text; margin-bottom: .75rem;
+}
+.hero-sub { font-size: 17px; color: var(--text-secondary); font-weight: 300; letter-spacing: -.01em; }
+.update-info { font-size: 13px; color: var(--text-tertiary); margin-top: .5rem; }
+
+/* ── GRID SYSTEM ── */
+.grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 1.25rem; }
+.grid-3 { display: grid; grid-template-columns: repeat(3,1fr); gap: 1.25rem; }
+.grid-4 { display: grid; grid-template-columns: repeat(4,1fr); gap: 1.25rem; }
+.grid-month { display: grid; grid-template-columns: repeat(3,1fr); gap: 1rem; }
+
+/* ── GLASS CARD ── */
+.card {
+  background: var(--glass);
+  backdrop-filter: var(--blur-sm); -webkit-backdrop-filter: var(--blur-sm);
+  border: .5px solid var(--glass-border);
+  border-radius: var(--radius-xl);
+  padding: 1.5rem 1.75rem;
+  box-shadow: var(--shadow-md);
+  transition: border-color .3s, box-shadow .3s;
+  position: relative; overflow: hidden;
+}
+.card::before {
+  content: ''; position: absolute; inset: 0; border-radius: inherit;
+  background: linear-gradient(135deg, rgba(255,255,255,.04) 0%, transparent 60%);
+  pointer-events: none;
+}
+.card:hover { border-color: rgba(255,255,255,.16); box-shadow: var(--shadow-lg); }
+
+/* ── METRIC CARD ── */
+.metric-card { padding: 1.25rem 1.5rem; }
+.metric-label {
+  font-size: 12px; font-weight: 500; letter-spacing: .06em;
+  text-transform: uppercase; color: var(--text-tertiary);
+  margin-bottom: .5rem;
+}
+.metric-value {
+  font-size: 32px; font-weight: 700; letter-spacing: -.04em;
+  font-variant-numeric: tabular-nums; line-height: 1;
+}
+.metric-sub { font-size: 12px; color: var(--text-tertiary); margin-top: .4rem; letter-spacing: -.01em; }
+.clr-green { color: var(--green); }
+.clr-red   { color: var(--red); }
+.clr-blue  { color: var(--blue); }
+.clr-orange { color: var(--orange); }
+.clr-teal  { color: var(--teal); }
+
+/* ── SECTION HEADER ── */
+.sec { margin-bottom: 3.5rem; }
+.sec-label {
+  font-size: 11px; font-weight: 600; letter-spacing: .14em;
+  text-transform: uppercase; color: var(--text-tertiary);
+  margin-bottom: .4rem; padding: 0 .25rem;
+}
+.sec-title {
+  font-size: 28px; font-weight: 700; letter-spacing: -.03em;
+  margin-bottom: 1.25rem; color: var(--text-primary);
+}
+
+/* ── TABLE ── */
+.tbl { width: 100%; border-collapse: collapse; font-size: 13px; }
+.tbl th {
+  font-size: 11px; font-weight: 600; letter-spacing: .08em;
+  text-transform: uppercase; color: var(--text-tertiary);
+  padding: 10px 14px; text-align: left;
+  border-bottom: .5px solid var(--separator);
+}
+.tbl td {
+  padding: 12px 14px; border-bottom: .5px solid var(--separator);
+  color: var(--text-primary); letter-spacing: -.01em;
+}
+.tbl tr:last-child td { border-bottom: none; }
+.tbl tr:hover td { background: rgba(255,255,255,.03); }
+.tr-total td { background: rgba(255,255,255,.04) !important; font-weight: 600; }
+.r { text-align: right; font-variant-numeric: tabular-nums; }
+.r.pos { color: var(--green); }
+.r.neg { color: var(--red); }
+.r.acc { color: var(--blue); }
+.r.dim { color: var(--text-secondary); }
+
+/* ── PILL BADGE ── */
+.pill {
+  display: inline-flex; align-items: center;
+  height: 20px; padding: 0 8px;
+  border-radius: var(--radius-full);
+  font-size: 11px; font-weight: 600; letter-spacing: .03em;
+  white-space: nowrap;
+}
+.pill-green  { background: rgba(48,209,88,.15);  color: var(--green); }
+.pill-red    { background: rgba(255,69,58,.15);   color: var(--red); }
+.pill-blue   { background: rgba(10,132,255,.15);  color: var(--blue); }
+.pill-orange { background: rgba(255,159,10,.15);  color: var(--orange); }
+.pill-purple { background: rgba(191,90,242,.15);  color: var(--purple); }
+.pill-teal   { background: rgba(90,200,250,.15);  color: var(--teal); }
+.pill-gray   { background: rgba(255,255,255,.08); color: var(--text-secondary); }
+
+/* ── PROGRESS BAR ── */
+.prog-wrap { height: 4px; background: rgba(255,255,255,.08); border-radius: 2px; overflow: hidden; margin: 5px 0 2px; }
+.prog-fill  { height: 100%; border-radius: 2px; transition: width 1s cubic-bezier(.34,1.56,.64,1); }
+
+/* ── NOTE BOX ── */
+.note {
+  border-radius: var(--radius-md);
+  padding: .875rem 1rem; margin-top: 1rem;
+  font-size: 13px; line-height: 1.5;
+}
+.note-hd { font-size: 11px; font-weight: 700; letter-spacing: .08em; text-transform: uppercase; margin-bottom: 4px; }
+.note-warn { background: rgba(255,159,10,.1); border: .5px solid rgba(255,159,10,.25); }
+.note-warn .note-hd { color: var(--orange); }
+.note-danger { background: rgba(255,69,58,.1); border: .5px solid rgba(255,69,58,.25); }
+.note-danger .note-hd { color: var(--red); }
+.note-info { background: rgba(10,132,255,.1); border: .5px solid rgba(10,132,255,.25); }
+.note-info .note-hd { color: var(--blue); }
+.note p { color: var(--text-secondary); }
+
+/* ── MONTH CARD ── */
+.mcard {
+  background: var(--glass);
+  backdrop-filter: var(--blur-sm); -webkit-backdrop-filter: var(--blur-sm);
+  border: .5px solid var(--glass-border);
+  border-radius: var(--radius-lg);
+  overflow: hidden;
+  box-shadow: var(--shadow-sm);
+  transition: transform .2s, box-shadow .2s;
+}
+.mcard:hover { transform: translateY(-3px); box-shadow: var(--shadow-md); }
+.mcard.deficit { border-top: 2px solid var(--red); }
+.mcard.surplus-hi { border-top: 2px solid var(--green); }
+.mcard.surplus-lo { border-top: 2px solid var(--orange); }
+
+.mcard-head {
+  padding: .875rem 1.125rem;
+  display: flex; justify-content: space-between; align-items: center;
+  border-bottom: .5px solid var(--separator);
+}
+.mcard-name { font-size: 16px; font-weight: 700; letter-spacing: -.02em; }
+.mcard-surplus { font-size: 15px; font-weight: 700; letter-spacing: -.02em; font-variant-numeric: tabular-nums; }
+.mcard-surplus.pos { color: var(--green); }
+.mcard-surplus.neg { color: var(--red); }
+
+.mcard-body { padding: .875rem 1.125rem; }
+.mcard-row {
+  display: flex; justify-content: space-between; align-items: flex-start;
+  padding: 5px 0; border-bottom: .5px solid rgba(255,255,255,.05);
+  font-size: 12px;
+}
+.mcard-row:last-child { border-bottom: none; }
+.mcard-row .lbl { color: var(--text-secondary); line-height: 1.4; max-width: 65%; }
+.mcard-row .val { font-variant-numeric: tabular-nums; font-size: 12px; font-weight: 500; }
+
+/* ── LIVE FLASH ── */
+@keyframes flashGreen { 0%{background:rgba(48,209,88,.25);} 100%{background:transparent;} }
+@keyframes flashRed   { 0%{background:rgba(255,69,58,.25);}  100%{background:transparent;} }
+.flash-up { animation: flashGreen .8s ease-out; border-radius: 4px; }
+.flash-dn { animation: flashRed .8s ease-out; border-radius: 4px; }
+
+/* ── DIVIDER ── */
+.divider { height: .5px; background: var(--separator); margin: .75rem 0; }
+
+/* ── SCROLL REVEAL ── */
+.reveal { opacity: 0; transform: translateY(20px); transition: opacity .6s ease, transform .6s ease; }
+.reveal.visible { opacity: 1; transform: translateY(0); }
+
+/* ── FOOTER ── */
+footer {
+  border-top: .5px solid var(--separator);
+  padding: 2rem;
+  text-align: center;
+  font-size: 12px; color: var(--text-tertiary); letter-spacing: .03em;
+}
+
+/* ── NET ASSET PANEL ── */
+.net-panel {
+  border-radius: var(--radius-md); padding: 1.25rem;
+  margin-top: 1rem;
+}
+.net-panel.neg { background: rgba(255,69,58,.08); border: .5px solid rgba(255,69,58,.2); }
+.net-panel.pos { background: rgba(48,209,88,.08); border: .5px solid rgba(48,209,88,.2); }
+
+@media(max-width:768px){
+  .grid-2,.grid-3,.grid-4,.grid-month { grid-template-columns: 1fr 1fr; }
+  .grid-4 { grid-template-columns: 1fr 1fr; }
+  .hero-title { font-size: 36px; }
+  .nav-links { display: none; }
+  main { padding-top: 106px; }
+}
+@media(max-width:480px){
+  .grid-2,.grid-month { grid-template-columns: 1fr; }
+}
+</style>
+</head>
+<body>
+
+<!-- BG ORBS -->
+<div class="bg-orbs">
+  <div class="orb orb-1"></div>
+  <div class="orb orb-2"></div>
+  <div class="orb orb-3"></div>
+</div>
+
+<!-- NAV -->
+<nav class="navbar">
+  <div class="nav-brand">周于堯</div>
+  <div class="nav-links">
+    <a href="#income">收入</a>
+    <a href="#expense">支出</a>
+    <a href="#portfolio">持股</a>
+    <a href="#monthly">月曆</a>
+    <a href="#assets">資產負債</a>
+    <a href="#insurance">保險</a>
+  </div>
+  <div class="nav-right">
+    <span class="nav-time" id="updateStatus">—</span>
+    <button class="refresh-btn" id="refreshBtn" onclick="fetchPrices()">
+      <svg width="12" height="12" viewBox="0 0 12 12" fill="currentColor"><path d="M6 1a5 5 0 1 0 4.33 2.5H9a.5.5 0 0 1 0-1h2.5a.5.5 0 0 1 .5.5V5.5a.5.5 0 0 1-1 0V3.77A5.99 5.99 0 0 1 6 11 5 5 0 1 1 6 1z"/></svg>
+      更新股價
+    </button>
+  </div>
+</nav>
+
+<!-- TICKER -->
+<div class="ticker-bar">
+  <div class="ticker-track" id="tickerTrack">
+    <!-- filled by JS, duplicated for loop -->
+  </div>
+</div>
+
+<!-- MAIN -->
+<main>
+<div class="container">
+
+  <!-- HERO -->
+  <section class="hero reveal">
+    <div class="hero-eyebrow">
+      <span class="live-dot"></span>
+      Personal Finance Dashboard
+    </div>
+    <h1 class="hero-title">財務全貌</h1>
+    <p class="hero-sub">薪資 · 配息 · 支出 · 資產負債 · 即時損益</p>
+    <p class="update-info" id="updateInfo">每日 13:30 自動更新股價 · 可手動點擊「更新股價」</p>
+  </section>
+
+  <!-- KPI -->
+  <section class="sec reveal">
+    <div class="grid-4" style="margin-bottom:1.25rem;">
+      <div class="card metric-card">
+        <div class="metric-label">月均總收入</div>
+        <div class="metric-value clr-green">113,607</div>
+        <div class="metric-sub">薪資 73,588 ＋ 配息 40,019</div>
+      </div>
+      <div class="card metric-card">
+        <div class="metric-label">月均總支出</div>
+        <div class="metric-value clr-red">69,379</div>
+        <div class="metric-sub">含稅費保費均攤</div>
+      </div>
+      <div class="card metric-card">
+        <div class="metric-label">月均盈餘</div>
+        <div class="metric-value clr-green">+44,228</div>
+        <div class="metric-sub">盈餘率 38.9%</div>
+      </div>
+      <div class="card metric-card">
+        <div class="metric-label">年配息總額</div>
+        <div class="metric-value clr-blue">480,230</div>
+        <div class="metric-sub">月均 40,019</div>
+      </div>
+    </div>
+    <div class="grid-4">
+      <div class="card metric-card">
+        <div class="metric-label">股票總市值</div>
+        <div class="metric-value clr-blue" id="kpi-mv">—</div>
+        <div class="metric-sub">即時更新</div>
+      </div>
+      <div class="card metric-card">
+        <div class="metric-label">總未實現損益</div>
+        <div class="metric-value clr-green" id="kpi-gain">—</div>
+        <div class="metric-sub" id="kpi-pct">—</div>
+      </div>
+      <div class="card metric-card">
+        <div class="metric-label">房貸餘額</div>
+        <div class="metric-value clr-red">8,907,098</div>
+        <div class="metric-sub">利率 2.19% · 剩 28 年</div>
+      </div>
+      <div class="card metric-card">
+        <div class="metric-label">緊急備用金</div>
+        <div class="metric-value clr-orange">200,000</div>
+        <div class="metric-sub">永豐大戶活儲</div>
+      </div>
+    </div>
+  </section>
+
+  <!-- INCOME -->
+  <section class="sec reveal" id="income">
+    <div class="sec-label">Income</div>
+    <div class="sec-title">收入結構</div>
+    <div class="grid-2">
+      <div class="card">
+        <div style="font-size:13px;font-weight:600;color:var(--text-secondary);letter-spacing:.04em;margin-bottom:1rem;text-transform:uppercase;font-size:11px;">薪資 — 雙軌交替制</div>
+        <table class="tbl">
+          <thead><tr><th>項目</th><th class="r">月金額</th><th></th></tr></thead>
+          <tbody>
+            <tr><td>薪資 A（奇月）</td><td class="r neg">41,079</td><td><span class="pill pill-red">低薪月</span></td></tr>
+            <tr><td>薪資 B（偶月）</td><td class="r pos">106,097</td><td><span class="pill pill-green">高薪月</span></td></tr>
+            <tr class="tr-total"><td>月均</td><td class="r acc">73,588</td><td><span class="pill pill-blue">雙月均</span></td></tr>
+            <tr><td>年薪合計</td><td class="r dim">883,056</td><td></td></tr>
+          </tbody>
+        </table>
+        <div class="note note-warn"><div class="note-hd">注意</div><p>低薪月缺口 <strong>-28,300</strong>，需配息補位。</p></div>
+      </div>
+      <div class="card">
+        <div style="font-size:11px;font-weight:600;color:var(--text-secondary);letter-spacing:.04em;margin-bottom:1rem;text-transform:uppercase;">台銀定存</div>
+        <table class="tbl">
+          <thead><tr><th>項目</th><th class="r">金額</th></tr></thead>
+          <tbody>
+            <tr><td>本金</td><td class="r dim">1,000,000</td></tr>
+            <tr><td>利率（一年期）</td><td class="r">1.70%</td></tr>
+            <tr><td>年利息</td><td class="r pos">17,000</td></tr>
+            <tr><td>到期日</td><td class="r acc">2026.06.13</td></tr>
+          </tbody>
+        </table>
+        <div class="note note-danger"><div class="note-hd">緊急決策（12 天後）</div><p>保留 30 萬活儲，70 萬建議轉入 ETF。</p></div>
+      </div>
+    </div>
+
+    <!-- Dividend -->
+    <div class="card" style="margin-top:1.25rem;">
+      <div style="font-size:11px;font-weight:600;color:var(--text-secondary);letter-spacing:.04em;margin-bottom:1rem;text-transform:uppercase;">ETF 配息明細 — 逐季實際公告（修正版）</div>
+      <div style="overflow-x:auto;">
+      <table class="tbl" style="min-width:760px;">
+        <thead>
+          <tr>
+            <th>標的</th><th class="r">股數</th><th class="r">Q1</th><th class="r">Q2</th>
+            <th class="r">Q3 *</th><th class="r">Q4 *</th>
+            <th class="r">年配息</th><th>頻率</th><th>性質</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td><strong>00919</strong> 群益精選高息</td><td class="r dim">56,000</td>
+            <td class="r">0.78</td><td class="r acc">0.78*</td><td class="r acc">0.78*</td><td class="r acc">0.78*</td>
+            <td class="r pos">174,720</td>
+            <td><span class="pill pill-green">季配 3·6·9·12</span></td>
+            <td><span class="pill pill-blue">高息</span></td>
+          </tr>
+          <tr>
+            <td><strong>0056</strong> 元大高股息</td><td class="r dim">35,000</td>
+            <td class="r">0.866</td><td class="r">1.000</td><td class="r acc">1.000*</td><td class="r acc">1.000*</td>
+            <td class="r pos">135,310</td>
+            <td><span class="pill pill-green">季配 1·4·7·10</span></td>
+            <td><span class="pill pill-blue">高息</span></td>
+          </tr>
+          <tr>
+            <td><strong>00878</strong> 國泰永續高息</td><td class="r dim">44,000</td>
+            <td class="r">0.42</td><td class="r">0.66</td><td class="r acc">0.66*</td><td class="r acc">0.66*</td>
+            <td class="r pos">105,600</td>
+            <td><span class="pill pill-green">季配 2·5·8·11</span></td>
+            <td><span class="pill pill-blue">高息</span></td>
+          </tr>
+          <tr>
+            <td><strong>00830</strong> 國泰費城半導體</td><td class="r dim">5,336</td>
+            <td class="r">9.00</td><td class="r dim" colspan="3" style="text-align:center;">— 年配，下次 2027/01 —</td>
+            <td class="r pos">48,024</td>
+            <td><span class="pill pill-orange">年配 1月·2月發</span></td>
+            <td><span class="pill pill-teal">產業</span></td>
+          </tr>
+          <tr>
+            <td><strong>0050</strong> 元大台灣50</td><td class="r dim">12,000</td>
+            <td class="r">1.00</td><td class="r dim">—</td><td class="r acc">0.36*</td><td class="r dim">—</td>
+            <td class="r pos">16,320</td>
+            <td><span class="pill pill-orange">半年配 1·7</span></td>
+            <td><span class="pill pill-teal">市值</span></td>
+          </tr>
+          <tr>
+            <td><strong>00757</strong> 統一FANG+</td><td class="r dim">1,781</td>
+            <td class="r dim" colspan="4" style="text-align:center;">不配息 — 純資本利得</td>
+            <td class="r dim">0</td>
+            <td><span class="pill pill-red">無配息</span></td>
+            <td><span class="pill pill-purple">美科成長</span></td>
+          </tr>
+          <tr>
+            <td><strong>2330</strong> 台積電</td><td class="r dim">16</td>
+            <td class="r dim">—</td><td class="r dim">—</td><td class="r dim">—</td><td class="r dim">—</td>
+            <td class="r pos">256</td>
+            <td><span class="pill pill-orange">季配 3·6·9·12</span></td>
+            <td><span class="pill pill-teal">個股</span></td>
+          </tr>
+          <tr class="tr-total">
+            <td colspan="6">合計</td>
+            <td class="r pos">480,230</td>
+            <td colspan="2" style="color:var(--text-secondary);font-size:11px;">月均 40,019</td>
+          </tr>
+        </tbody>
+      </table>
+      </div>
+      <p style="font-size:11px;color:var(--text-tertiary);margin-top:.75rem;">* 未公告季度沿用上季數字。00830 已修正為年配息，2026/01 實際配發 9.0 元。</p>
+    </div>
+  </section>
+
+  <!-- EXPENSE -->
+  <section class="sec reveal" id="expense">
+    <div class="sec-label">Expenses</div>
+    <div class="sec-title">支出結構</div>
+    <div class="grid-2">
+      <div class="card">
+        <div style="font-size:11px;font-weight:600;color:var(--text-secondary);letter-spacing:.04em;text-transform:uppercase;margin-bottom:1rem;">固定支出</div>
+        <table class="tbl">
+          <thead><tr><th>項目</th><th class="r">月金額</th><th></th></tr></thead>
+          <tbody>
+            <tr><td>房貸本息</td><td class="r neg">35,718</td><td><span class="pill pill-red">51.5%</span></td></tr>
+            <tr><td>大樓管理費</td><td class="r neg">4,070</td><td><span class="pill pill-gray">季均攤</span></td></tr>
+            <tr><td>電費</td><td class="r neg">1,110</td><td><span class="pill pill-gray">雙月均攤</span></td></tr>
+            <tr><td>中華電信 5G</td><td class="r neg">821</td><td></td></tr>
+            <tr><td>水費</td><td class="r neg">150</td><td></td></tr>
+            <tr class="tr-total"><td>固定小計</td><td class="r neg">41,869</td><td></td></tr>
+          </tbody>
+        </table>
+      </div>
+      <div class="card">
+        <div style="font-size:11px;font-weight:600;color:var(--text-secondary);letter-spacing:.04em;text-transform:uppercase;margin-bottom:1rem;">生活支出</div>
+        <table class="tbl">
+          <thead><tr><th>項目</th><th class="r">月金額</th><th>備註</th></tr></thead>
+          <tbody>
+            <tr><td>餐飲（平日 22 天）</td><td class="r neg">4,400</td><td><span class="pill pill-gray">200/天</span></td></tr>
+            <tr><td>餐飲（週末 8 天）</td><td class="r neg">2,500</td><td><span class="pill pill-gray">1,250/天</span></td></tr>
+            <tr><td>油資</td><td class="r neg">2,000</td><td><span class="pill pill-gray">Audi A3</span></td></tr>
+            <tr><td>日常購物</td><td class="r neg">3,000</td><td></td></tr>
+            <tr><td>00878 定期定額</td><td class="r neg">10,000</td><td><span class="pill pill-blue">強制儲蓄</span></td></tr>
+            <tr class="tr-total"><td>生活小計</td><td class="r neg">21,900</td><td></td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <div class="grid-2" style="margin-top:1.25rem;">
+      <div class="card">
+        <div style="font-size:11px;font-weight:600;color:var(--text-secondary);letter-spacing:.04em;text-transform:uppercase;margin-bottom:1rem;">稅費 — 年度</div>
+        <table class="tbl">
+          <thead><tr><th>項目</th><th>繳納月</th><th class="r">年度</th><th class="r">月均</th></tr></thead>
+          <tbody>
+            <tr><td>汽車牌照稅</td><td><span class="pill pill-orange">4月</span></td><td class="r neg">7,120</td><td class="r dim">593</td></tr>
+            <tr><td>汽車燃料費</td><td><span class="pill pill-orange">7月</span></td><td class="r neg">4,800</td><td class="r dim">400</td></tr>
+            <tr><td>房屋稅（估）</td><td><span class="pill pill-orange">5月</span></td><td class="r neg">10,000</td><td class="r dim">833</td></tr>
+            <tr><td>地價稅（估）</td><td><span class="pill pill-orange">11月</span></td><td class="r neg">4,200</td><td class="r dim">350</td></tr>
+            <tr class="tr-total"><td>合計</td><td></td><td class="r neg">26,120</td><td class="r dim">2,176</td></tr>
+          </tbody>
+        </table>
+      </div>
+      <div class="card">
+        <div style="font-size:11px;font-weight:600;color:var(--text-secondary);letter-spacing:.04em;text-transform:uppercase;margin-bottom:1rem;">保費 — 年度</div>
+        <table class="tbl">
+          <thead><tr><th>項目</th><th class="r">年保費</th><th class="r">月均</th></tr></thead>
+          <tbody>
+            <tr><td>國泰失能照護</td><td class="r neg">16,820</td><td class="r dim">1,402</td></tr>
+            <tr><td>Audi A3 車險</td><td class="r neg">13,355</td><td class="r dim">1,113</td></tr>
+            <tr><td>Vespa 機車險</td><td class="r neg">3,424</td><td class="r dim">285</td></tr>
+            <tr><td>Gogoro 機車險</td><td class="r neg">1,185</td><td class="r dim">99</td></tr>
+            <tr><td>三商醫療 + 意外</td><td class="r neg">6,413</td><td class="r dim">534</td></tr>
+            <tr class="tr-total"><td>合計</td><td class="r neg">41,197</td><td class="r dim">3,433</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- Expense summary bars -->
+    <div class="card" style="margin-top:1.25rem;">
+      <div style="font-size:11px;font-weight:600;color:var(--text-secondary);letter-spacing:.04em;text-transform:uppercase;margin-bottom:1rem;">支出佔比</div>
+      <table class="tbl">
+        <thead><tr><th>類別</th><th class="r">月均</th><th class="r">佔比</th><th style="width:40%"></th></tr></thead>
+        <tbody>
+          <tr><td>固定支出（房貸＋管理費等）</td><td class="r neg">41,869</td><td class="r neg">60.3%</td><td><div class="prog-wrap"><div class="prog-fill" style="width:60.3%;background:var(--red);"></div></div></td></tr>
+          <tr><td>生活支出（含定額投資）</td><td class="r neg">21,900</td><td class="r" style="color:var(--orange);">31.6%</td><td><div class="prog-wrap"><div class="prog-fill" style="width:31.6%;background:var(--orange);"></div></div></td></tr>
+          <tr><td>稅費均攤</td><td class="r neg">2,176</td><td class="r dim">3.1%</td><td><div class="prog-wrap"><div class="prog-fill" style="width:3.1%;background:var(--yellow);"></div></div></td></tr>
+          <tr><td>保費均攤</td><td class="r neg">3,434</td><td class="r dim">5.0%</td><td><div class="prog-wrap"><div class="prog-fill" style="width:5%;background:var(--teal);"></div></div></td></tr>
+          <tr class="tr-total"><td>月均支出總計</td><td class="r neg">69,379</td><td></td><td></td></tr>
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+  <!-- PORTFOLIO -->
+  <section class="sec reveal" id="portfolio">
+    <div class="sec-label">Portfolio — Live</div>
+    <div class="sec-title">投資組合</div>
+    <div class="card">
+      <div style="font-size:11px;font-weight:600;color:var(--text-secondary);letter-spacing:.04em;text-transform:uppercase;margin-bottom:1rem;display:flex;justify-content:space-between;align-items:center;">
+        <span>持股明細 — 即時股價</span>
+        <span id="lastUpdate" style="font-weight:400;color:var(--text-tertiary);">尚未更新</span>
+      </div>
+      <div style="overflow-x:auto;">
+      <table class="tbl" id="ptable" style="min-width:780px;">
+        <thead>
+          <tr>
+            <th>標的</th><th class="r">股數</th><th class="r">成本均價</th>
+            <th class="r">總成本</th><th class="r">現價</th>
+            <th class="r">市值</th><th class="r">未實現損益</th>
+            <th class="r">報酬率</th><th>策略</th>
+          </tr>
+        </thead>
+        <tbody id="ptbody"></tbody>
+      </table>
+      </div>
+    </div>
+  </section>
+
+  <!-- MONTHLY -->
+  <section class="sec reveal" id="monthly">
+    <div class="sec-label">Monthly Cash Flow</div>
+    <div class="sec-title">月度現金流</div>
+    <div class="grid-month" id="monthGrid"></div>
+  </section>
+
+  <!-- ASSETS -->
+  <section class="sec reveal" id="assets">
+    <div class="sec-label">Assets &amp; Liabilities</div>
+    <div class="sec-title">資產與負債</div>
+    <div class="grid-2">
+      <div class="card">
+        <div style="font-size:11px;font-weight:600;color:var(--text-secondary);letter-spacing:.04em;text-transform:uppercase;margin-bottom:1rem;">資產</div>
+        <table class="tbl">
+          <thead><tr><th>項目</th><th class="r">金額</th></tr></thead>
+          <tbody>
+            <tr><td>股票市值（即時）</td><td class="r pos" id="a-stocks">—</td></tr>
+            <tr><td>台銀定存（到期）</td><td class="r pos">1,000,000</td></tr>
+            <tr><td>永豐活儲</td><td class="r pos">200,000</td></tr>
+            <tr><td>三商保單價值（估）</td><td class="r pos">~200,000</td></tr>
+            <tr class="tr-total"><td>資產合計</td><td class="r acc" id="a-total">—</td></tr>
+          </tbody>
+        </table>
+      </div>
+      <div class="card">
+        <div style="font-size:11px;font-weight:600;color:var(--text-secondary);letter-spacing:.04em;text-transform:uppercase;margin-bottom:1rem;">負債</div>
+        <table class="tbl">
+          <thead><tr><th>項目</th><th class="r">金額</th></tr></thead>
+          <tbody>
+            <tr>
+              <td>
+                房貸餘額<br>
+                <span style="font-size:11px;color:var(--text-tertiary);">2024/02/21 ~ 2054/02/21 · 浮動 2.19%</span>
+              </td>
+              <td class="r neg">8,907,098</td>
+            </tr>
+            <tr><td>月還款本息</td><td class="r neg">35,718</td></tr>
+            <tr><td>剩餘年期</td><td class="r dim">28 年</td></tr>
+            <tr class="tr-total"><td>負債合計</td><td class="r neg">8,907,098</td></tr>
+          </tbody>
+        </table>
+        <div class="net-panel neg" id="netPanel">
+          <div style="font-size:11px;color:var(--red);font-weight:600;letter-spacing:.06em;text-transform:uppercase;margin-bottom:.25rem;">淨資產（即時）</div>
+          <div style="font-size:34px;font-weight:700;letter-spacing:-.04em;font-variant-numeric:tabular-nums;" id="netVal">—</div>
+          <div style="font-size:12px;color:var(--text-tertiary);margin-top:.25rem;">股票市值超越房貸後翻正，預估 3 年內達成。</div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- INSURANCE -->
+  <section class="sec reveal" id="insurance">
+    <div class="sec-label">Insurance</div>
+    <div class="sec-title">保險保障</div>
+    <div class="card">
+      <div style="overflow-x:auto;">
+      <table class="tbl" style="min-width:700px;">
+        <thead><tr><th>保單</th><th>險種</th><th class="r">保額</th><th class="r">年保費</th><th>狀態</th><th>保障至</th></tr></thead>
+        <tbody>
+          <tr><td>國泰人壽</td><td>新吶護久久失能照護</td><td class="r dim">—</td><td class="r neg">16,820</td><td><span class="pill pill-green">繳費中</span></td><td>—</td></tr>
+          <tr><td rowspan="2" style="vertical-align:top;padding-top:14px;">三商美邦<br><span style="font-size:11px;color:var(--text-tertiary);">178710005965</span></td>
+              <td>二十年繳費金富多終身壽險</td><td class="r dim">100,000</td><td class="r dim">0</td><td><span class="pill pill-blue">繳費期滿</span></td><td style="color:var(--text-secondary);">民 169/04/19</td></tr>
+          <tr><td>重大疾病及殘廢豁免附約</td><td class="r dim">18,000</td><td class="r dim">0</td><td><span class="pill pill-red">已滿期</span></td><td style="color:var(--text-secondary);">民 111/04/19</td></tr>
+          <tr><td rowspan="7" style="vertical-align:top;padding-top:14px;">三商美邦<br><span style="font-size:11px;color:var(--text-tertiary);">178710011609</span></td>
+              <td>祥安終身壽險</td><td class="r dim">500,000</td><td class="r dim">0</td><td><span class="pill pill-blue">繳費期滿</span></td><td style="color:var(--text-secondary);">民 170/01/08</td></tr>
+          <tr><td>新重大疾病終身附約</td><td class="r dim">500,000</td><td class="r dim">0</td><td><span class="pill pill-blue">繳費期滿</span></td><td style="color:var(--text-secondary);">民 170/01/08</td></tr>
+          <tr><td>新住院醫療附約計劃 C</td><td class="r dim">1 單位</td><td class="r neg">3,713</td><td><span class="pill pill-green">繳費中</span></td><td style="color:var(--text-secondary);">民 140/01/08</td></tr>
+          <tr><td>意外身故及殘廢保險金</td><td class="r dim">1,432,099</td><td class="r neg">1,160</td><td><span class="pill pill-green">繳費中</span></td><td style="color:var(--text-secondary);">民 141/01/08</td></tr>
+          <tr><td>傷害醫療日額</td><td class="r dim">1,000/日</td><td class="r neg">620</td><td><span class="pill pill-green">繳費中</span></td><td style="color:var(--text-secondary);">民 141/01/08</td></tr>
+          <tr><td>傷害醫療限額</td><td class="r dim">50,000</td><td class="r neg">920</td><td><span class="pill pill-green">繳費中</span></td><td style="color:var(--text-secondary);">民 141/01/08</td></tr>
+          <tr><td>全殘扶助終身附約</td><td class="r dim">100,000</td><td class="r dim">0</td><td><span class="pill pill-blue">繳費期滿</span></td><td style="color:var(--text-secondary);">民 170/01/08</td></tr>
+        </tbody>
+      </table>
+      </div>
+      <div class="note note-danger" style="margin-top:1rem;">
+        <div class="note-hd">保障缺口</div>
+        <p>壽險合計保額 600,000 元，遠不足覆蓋房貸 8,907,098 元。建議補足定期壽險 500 ~ 800 萬。</p>
+      </div>
+      <div class="note note-info" style="margin-top:.75rem;">
+        <div class="note-hd">珍貴舊保單 — 請勿解約</div>
+        <p>178710005965（民 91 年，預定利率 4%）每年 4/19 領生存金 10,000 元，保障至民 169 年。高預定利率舊保單市場已無法複製。</p>
+      </div>
+    </div>
+  </section>
+
+</div>
+</main>
+
+<footer>
+  <p>財務總覽 · 周于堯 · 股價資料來源：Yahoo Finance 公開 API</p>
+  <p style="margin-top:.4rem;">資料截至 2026.06.01 · 僅供個人參考，不構成投資建議</p>
+</footer>
+
+<script>
+const N = n => Math.round(n).toLocaleString('zh-TW');
+const Nd = n => (n>=0?'+':'')+N(n);
+
+/* ── Holdings ── */
+const H = [
+  {c:'0050',  n:'元大台灣50',     s:12000,  avg:58.24,   base:105.6,  tag:'市值成長',  tc:'teal'},
+  {c:'0056',  n:'元大高股息',     s:35000,  avg:37.49,   base:51.6,   tag:'高息核心',  tc:'blue'},
+  {c:'00757', n:'統一FANG+',      s:1781,   avg:108.23,  base:137.45, tag:'美科成長',  tc:'purple'},
+  {c:'00830', n:'國泰費城半導體', s:5336,   avg:46.82,   base:90.4,   tag:'產業主題',  tc:'orange'},
+  {c:'00878', n:'國泰永續高息',   s:44000,  avg:25.22,   base:31.76,  tag:'高息核心',  tc:'blue'},
+  {c:'00919', n:'群益精選高息',   s:56000,  avg:22.90,   base:29.75,  tag:'高息核心',  tc:'blue'},
+  {c:'2330',  n:'台積電',         s:16,     avg:1830.69, base:2365,   tag:'個股',      tc:'teal'},
+];
+
+let live = {};
+
+function renderPortfolio() {
+  const tb = document.getElementById('ptbody');
+  tb.innerHTML='';
+  let tc=0, tmv=0;
+  H.forEach(h=>{
+    const p = live[h.c] || h.base;
+    const mv = h.s*p, cost = h.s*h.avg, gain = mv-cost, pct=(gain/cost*100);
+    tc+=cost; tmv+=mv;
+    const tr=document.createElement('tr');
+    tr.innerHTML=`
+      <td><strong>${h.c}</strong> <span style="color:var(--text-secondary)">${h.n}</span></td>
+      <td class="r dim">${N(h.s)}</td>
+      <td class="r dim">${h.avg.toFixed(2)}</td>
+      <td class="r dim">${N(cost)}</td>
+      <td class="r" id="pv-${h.c}">${p.toFixed(2)}</td>
+      <td class="r acc" id="mv-${h.c}">${N(mv)}</td>
+      <td class="r ${gain>=0?'pos':'neg'}" id="gn-${h.c}">${Nd(gain)}</td>
+      <td class="r ${gain>=0?'pos':'neg'}" id="pt-${h.c}">${pct>=0?'+':''}${pct.toFixed(1)}%</td>
+      <td><span class="pill pill-${h.tc}">${h.tag}</span></td>`;
+    tb.appendChild(tr);
+  });
+  const tg=tmv-tc, tp=(tg/tc*100);
+  const tr2=document.createElement('tr');
+  tr2.className='tr-total';
+  tr2.innerHTML=`<td colspan="3">合計</td>
+    <td class="r dim">${N(tc)}</td><td></td>
+    <td class="r acc" id="tot-mv">${N(tmv)}</td>
+    <td class="r pos" id="tot-gn">${Nd(tg)}</td>
+    <td class="r pos">${tg>=0?'+':''}${tp.toFixed(1)}%</td><td></td>`;
+  tb.appendChild(tr2);
+
+  /* KPI */
+  document.getElementById('kpi-mv').textContent=N(tmv);
+  document.getElementById('kpi-gain').textContent=Nd(tg);
+  document.getElementById('kpi-pct').textContent=(tg>=0?'+':'')+tp.toFixed(1)+'% 報酬率';
+  document.getElementById('a-stocks').textContent=N(tmv);
+  const at=tmv+1e6+2e5+2e5;
+  document.getElementById('a-total').textContent=N(at)+'（估）';
+  const net=at-8907098;
+  const nv=document.getElementById('netVal');
+  nv.textContent=Nd(net);
+  nv.style.color=net>=0?'var(--green)':'var(--red)';
+  document.getElementById('netPanel').className='net-panel '+(net>=0?'pos':'neg');
+}
+
+/* ── Ticker ── */
+function renderTicker() {
+  const track=document.getElementById('tickerTrack');
+  const items=H.map(h=>{
+    const p=live[h.c]||h.base;
+    const chg=p-h.base, pct=(chg/h.base*100);
+    const cls=chg>=0?'up':'dn';
+    const sign=chg>=0?'+':'';
+    return `<div class="ticker-item">
+      <span class="t-code">${h.c}</span>
+      <span class="t-price">${p.toFixed(2)}</span>
+      <span class="t-chg ${cls}">${sign}${chg.toFixed(2)}（${sign}${pct.toFixed(1)}%）</span>
+    </div>`;
+  }).join('');
+  track.innerHTML=items+items; /* duplicate for seamless loop */
+}
+
+/* ── Fetch ── */
+async function fetchPrices() {
+  const btn=document.getElementById('refreshBtn');
+  const status=document.getElementById('updateStatus');
+  btn.disabled=true; btn.innerHTML='<svg width="12" height="12" viewBox="0 0 12 12" fill="currentColor" style="animation:spin .8s linear infinite"><path d="M6 1a5 5 0 1 0 4.33 2.5H9a.5.5 0 0 1 0-1h2.5a.5.5 0 0 1 .5.5V5.5a.5.5 0 0 1-1 0V3.77A5.99 5.99 0 0 1 6 11 5 5 0 1 1 6 1z"/></svg> 更新中';
+  status.textContent='請求中...';
+
+  let ok=0;
+  const jobs=H.map(async h=>{
+    try {
+      const r=await fetch(`https://query1.finance.yahoo.com/v8/finance/chart/${h.c}.TW?interval=1d&range=1d`,{signal:AbortSignal.timeout(6000)});
+      const d=await r.json();
+      const p=d?.chart?.result?.[0]?.meta?.regularMarketPrice;
+      if(p&&p>0){
+        const prev=live[h.c]||h.base;
+        live[h.c]=p; ok++;
+        ['pv','mv','gn','pt'].forEach(x=>{
+          const el=document.getElementById(`${x}-${h.c}`);
+          if(el){el.classList.remove('flash-up','flash-dn');void el.offsetWidth;el.classList.add(p>=prev?'flash-up':'flash-dn');}
+        });
+      }
+    } catch(_){}
+  });
+  await Promise.allSettled(jobs);
+
+  renderPortfolio(); renderTicker();
+  const now=new Date();
+  const ts=`${String(now.getMonth()+1).padStart(2,'0')}/${String(now.getDate()).padStart(2,'0')} ${String(now.getHours()).padStart(2,'0')}:${String(now.getMinutes()).padStart(2,'0')}`;
+  const msg=ok>0?`${ts} 已更新 ${ok}/${H.length} 檔`:`${ts} 使用基準價格`;
+  status.textContent=msg;
+  document.getElementById('lastUpdate').textContent=msg;
+  btn.disabled=false;
+  btn.innerHTML='<svg width="12" height="12" viewBox="0 0 12 12" fill="currentColor"><path d="M6 1a5 5 0 1 0 4.33 2.5H9a.5.5 0 0 1 0-1h2.5a.5.5 0 0 1 .5.5V5.5a.5.5 0 0 1-1 0V3.77A5.99 5.99 0 0 1 6 11 5 5 0 1 1 6 1z"/></svg> 更新股價';
+}
+
+/* ── Monthly ── */
+const salaries=[41079,106097,41079,106097,41079,106097,41079,106097,41079,106097,41079,106097];
+const mNames=['一月','二月','三月','四月','五月','六月','七月','八月','九月','十月','十一月','十二月'];
+const divRec=[
+  56000*.78+16*4,
+  35000*.866+12000*1+5336*9,
+  44000*.42,
+  35000*1+56000*.78+16*4,
+  44000*.66,
+  56000*.78+16*4,
+  35000*1+12000*.36,
+  44000*.66,
+  56000*.78+16*4,
+  35000*1,
+  44000*.66,
+  56000*.78+16*4,
+];
+const divSrc=[
+  '00919 Q4 ＋ 2330','0056 Q1 ＋ 0050 ＋ 00830','00878 Q1',
+  '0056 Q2 ＋ 00919 Q1','00878 Q2','00919 Q2 ＋ 2330',
+  '0056 Q3 ＋ 0050 H1','00878 Q3','00919 Q3 ＋ 2330',
+  '0056 Q4','00878 Q4','00919 Q4 ＋ 2330',
+];
+const baseExp=69379;
+const extraTax={3:7120,4:10000,6:4800,7:16820,10:4200};
+const extraLbl={3:'牌照稅',4:'房屋稅',6:'燃料費',7:'失能險年繳',10:'地價稅'};
+
+function buildMonths(){
+  const g=document.getElementById('monthGrid');
+  g.innerHTML='';
+  mNames.forEach((m,i)=>{
+    const sal=salaries[i], div=Math.round(divRec[i]);
+    const ex=extraTax[i]||0, exp=baseExp+ex;
+    const inc=sal+div, sur=inc-exp;
+    const isLow=sal<60000;
+    let cls='mcard ';
+    if(sur<0) cls+='deficit';
+    else if(sur>65000) cls+='surplus-hi';
+    else cls+='surplus-lo';
+
+    const c=document.createElement('div');
+    c.className=cls;
+    c.innerHTML=`
+      <div class="mcard-head">
+        <div class="mcard-name">${m}${isLow?' <span style="font-size:10px;color:var(--red);background:rgba(255,69,58,.15);padding:1px 6px;border-radius:100px;">低薪</span>':''}</div>
+        <div class="mcard-surplus ${sur>=0?'pos':'neg'}">${sur>=0?'+':''}${N(sur)}</div>
+      </div>
+      <div class="mcard-body">
+        <div class="mcard-row">
+          <span class="lbl">薪資</span>
+          <span class="val" style="color:var(--blue);">+${N(sal)}</span>
+        </div>
+        <div class="mcard-row">
+          <span class="lbl" style="font-size:11px;">${divSrc[i]}</span>
+          <span class="val" style="color:var(--green);">+${N(div)}</span>
+        </div>
+        <div class="mcard-row" style="border-color:rgba(255,255,255,.1)">
+          <span class="lbl" style="font-weight:600;color:var(--text-primary);">總收入</span>
+          <span class="val" style="font-weight:700;">+${N(inc)}</span>
+        </div>
+        <div class="mcard-row">
+          <span class="lbl">固定＋生活支出</span>
+          <span class="val" style="color:var(--red);">-${N(baseExp)}</span>
+        </div>
+        ${ex?`<div class="mcard-row"><span class="lbl" style="color:var(--orange);">${extraLbl[i]}</span><span class="val" style="color:var(--red);">-${N(ex)}</span></div>`:''}
+        <div class="mcard-row" style="border-bottom:none;padding-top:8px;">
+          <span class="lbl" style="font-weight:600;color:var(--text-primary);">月結餘</span>
+          <span class="val" style="font-weight:700;font-size:14px;color:${sur>=0?'var(--green)':'var(--red)'};">${sur>=0?'+':''}${N(sur)}</span>
+        </div>
+      </div>`;
+    g.appendChild(c);
+  });
+}
+
+/* ── Scroll reveal ── */
+function setupReveal(){
+  const els=document.querySelectorAll('.reveal');
+  const obs=new IntersectionObserver(entries=>{
+    entries.forEach((e,idx)=>{
+      if(e.isIntersecting){
+        setTimeout(()=>e.target.classList.add('visible'),idx*60);
+        obs.unobserve(e.target);
+      }
+    });
+  },{threshold:.08});
+  els.forEach(el=>obs.observe(el));
+}
+
+/* ── spin keyframe ── */
+const s=document.createElement('style');
+s.textContent='@keyframes spin{to{transform:rotate(360deg)}}';
+document.head.appendChild(s);
+
+/* ── Auto update at 13:30 weekdays ── */
+function scheduleAuto(){
+  const now=new Date(), day=now.getDay();
+  if(day===0||day===6) return;
+  const t=new Date(now); t.setHours(13,30,0,0);
+  const ms=t-now;
+  if(ms>0) setTimeout(()=>{fetchPrices();document.getElementById('updateInfo').textContent='股價已於 13:30 自動更新 · 可隨時手動刷新';},ms);
+}
+
+/* ── INIT ── */
+renderPortfolio();
+renderTicker();
+buildMonths();
+setupReveal();
+scheduleAuto();
+</script>
+</body>
+</html>
